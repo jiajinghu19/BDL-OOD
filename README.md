@@ -2,6 +2,17 @@
 
 This project aims to detect out of distribution (OOD) through image classification tasks. We will train VAE and ODIN models. Different datasets including MNIST, FashionMNIST, CIFAR-10, SVHN will be used in this project.
 
+## Conda environment
+
+### Create from yml
+```
+conda env create -f environment.yml
+```
+
+### Activate environment
+```
+conda activate bdl_ood
+```
 
 ## Data
 
