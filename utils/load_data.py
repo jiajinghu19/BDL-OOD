@@ -3,7 +3,7 @@ import torch
 import numpy as np
 
 
-def load_data(train_dataset, test_dataset, train_batch_size, eval_batch_size, S):
+def load_data(train_dataset, train_batch_size, eval_batch_size, S):
     if train_dataset == "MNIST":
         train_loader = torch.utils.data.DataLoader(
                 datasets.MNIST(
@@ -15,10 +15,26 @@ def load_data(train_dataset, test_dataset, train_batch_size, eval_batch_size, S)
 
         train_eval_loader = torch.utils.data.DataLoader(
         datasets.MNIST(
-            '../data', train=True,
+            '../data', train=True, 
             transform=transforms.Compose([
                 transforms.CenterCrop((S)),
                 transforms.ToTensor(), torch.round])),    
+        batch_size=eval_batch_size, shuffle=False)
+
+        test_loader_in = torch.utils.data.DataLoader(
+        datasets.MNIST(
+            '../data', train=False,
+            transform=transforms.Compose([
+                transforms.CenterCrop((S)),
+                transforms.ToTensor(), torch.round])),
+        batch_size=eval_batch_size, shuffle=False)
+
+        test_loader_out = torch.utils.data.DataLoader(
+        datasets.FashionMNIST(
+            '../data', train=False, download=True,
+            transform=transforms.Compose([
+                transforms.CenterCrop((S)),
+                transforms.ToTensor(), torch.round])),
         batch_size=eval_batch_size, shuffle=False)
 
         print("MNIST train data : %d binary images with raw shape (%d,%d)." % (
@@ -44,6 +60,22 @@ def load_data(train_dataset, test_dataset, train_batch_size, eval_batch_size, S)
                 transforms.CenterCrop((S)),
                 transforms.ToTensor(), torch.round])),    
         batch_size=eval_batch_size, shuffle=False)
+
+        test_loader_in = torch.utils.data.DataLoader(
+        datasets.FashionMNIST(
+            '../data', train=False, 
+            transform=transforms.Compose([
+                transforms.CenterCrop((S)),
+                transforms.ToTensor(), torch.round])),
+        batch_size=eval_batch_size, shuffle=False)
+
+        test_loader_out = torch.utils.data.DataLoader(
+        datasets.MNIST(
+            '../data', train=False, download=True,
+            transform=transforms.Compose([
+                transforms.CenterCrop((S)),
+                transforms.ToTensor(), torch.round])),
+        batch_size=eval_batch_size, shuffle=False)
     elif train_dataset == "CIFAR10":
         train_loader = torch.utils.data.DataLoader(
                 datasets.CIFAR10(
@@ -59,6 +91,22 @@ def load_data(train_dataset, test_dataset, train_batch_size, eval_batch_size, S)
             transform=transforms.Compose([
                 transforms.CenterCrop((S)),
                 transforms.ToTensor(), torch.round])),    
+        batch_size=eval_batch_size, shuffle=False)
+
+        test_loader_in = torch.utils.data.DataLoader(
+        datasets.CIFAR10(
+            '../data', train=False,
+            transform=transforms.Compose([
+                transforms.CenterCrop((S)),
+                transforms.ToTensor(), torch.round])),
+        batch_size=eval_batch_size, shuffle=False)
+
+        test_loader_out = torch.utils.data.DataLoader(
+        datasets.SVHN(
+            '../data', train=False, download=True,
+            transform=transforms.Compose([
+                transforms.CenterCrop((S)),
+                transforms.ToTensor(), torch.round])),
         batch_size=eval_batch_size, shuffle=False)
     elif train_dataset == "SVHN":
         train_loader = torch.utils.data.DataLoader(
@@ -77,41 +125,24 @@ def load_data(train_dataset, test_dataset, train_batch_size, eval_batch_size, S)
                 transforms.ToTensor(), torch.round])),    
         batch_size=eval_batch_size, shuffle=False)
 
-    
-    if test_dataset == "MNIST":
-        test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(
-            '../data', train=False,
-            transform=transforms.Compose([
-                transforms.CenterCrop((S)),
-                transforms.ToTensor(), torch.round])),
-        batch_size=eval_batch_size, shuffle=False)
-    elif test_dataset == "FashionMNIST":
-        test_loader = torch.utils.data.DataLoader(
-        datasets.FashionMNIST(
-            '../data', train=False,
-            transform=transforms.Compose([
-                transforms.CenterCrop((S)),
-                transforms.ToTensor(), torch.round])),
-        batch_size=eval_batch_size, shuffle=False)
-    elif test_dataset == "CIFAR10":
-        test_loader = torch.utils.data.DataLoader(
-        datasets.CIFAR10(
-            '../data', train=False,
-            transform=transforms.Compose([
-                transforms.CenterCrop((S)),
-                transforms.ToTensor(), torch.round])),
-        batch_size=eval_batch_size, shuffle=False)   
-    elif test_dataset == "SVHN":
-        test_loader = torch.utils.data.DataLoader(
+        test_loader_in = torch.utils.data.DataLoader(
         datasets.SVHN(
             '../data', train=False,
             transform=transforms.Compose([
                 transforms.CenterCrop((S)),
                 transforms.ToTensor(), torch.round])),
-        batch_size=eval_batch_size, shuffle=False) 
+        batch_size=eval_batch_size, shuffle=False)
 
-    return train_loader, train_eval_loader, test_loader
+        test_loader_out = torch.utils.data.DataLoader(
+        datasets.CIFAR10(
+            '../data', train=False, download=True,
+            transform=transforms.Compose([
+                transforms.CenterCrop((S)),
+                transforms.ToTensor(), torch.round])),
+        batch_size=eval_batch_size, shuffle=False)
+    
+
+    return train_loader, train_eval_loader, test_loader_in, test_loader_out
     
      
 
