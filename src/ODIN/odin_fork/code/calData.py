@@ -15,15 +15,13 @@ Created on Sat Sep 19 20:55:56 2015
 from __future__ import print_function
 import torch
 from torch.autograd import Variable
-import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
-import torch.optim as optim
-import torchvision
 import torchvision.transforms as transforms
 import numpy as np
 import time
-from scipy import misc
+
+def reshape_output(output):
+    return torch.reshape(output, (1, 10))
 
 def testData(net1, criterion, CUDA_DEVICE, testloader_in, testloader_out, nnName, in_data_name, out_data_name, noiseMagnitude1, temper):
     t0 = time.time()
@@ -41,7 +39,7 @@ def testData(net1, criterion, CUDA_DEVICE, testloader_in, testloader_out, nnName
         images, _ = data
         
         inputs = Variable(images.cuda(CUDA_DEVICE), requires_grad = True)
-        outputs = net1(inputs)
+        outputs = reshape_output(net1(inputs))
         
 
         # Calculating the confidence of the output, no perturbation added here, no temperature scaling used
@@ -71,7 +69,7 @@ def testData(net1, criterion, CUDA_DEVICE, testloader_in, testloader_out, nnName
         gradient[0][2] = (gradient[0][2])/(66.7/255.0)
         # Adding small perturbations to images
         tempInputs = torch.add(inputs.data,  -noiseMagnitude1, gradient)
-        outputs = net1(Variable(tempInputs))
+        outputs = reshape_output(net1(Variable(tempInputs)))
         outputs = outputs / temper
         # Calculating the confidence after adding perturbations
         nnOutputs = outputs.data.cpu()
@@ -96,7 +94,7 @@ def testData(net1, criterion, CUDA_DEVICE, testloader_in, testloader_out, nnName
     
     
         inputs = Variable(images.cuda(CUDA_DEVICE), requires_grad = True)
-        outputs = net1(inputs)
+        outputs = reshape_output(net1(inputs))
         
 
 
@@ -128,7 +126,7 @@ def testData(net1, criterion, CUDA_DEVICE, testloader_in, testloader_out, nnName
         gradient[0][2] = (gradient[0][2])/(66.7/255.0)
         # Adding small perturbations to images
         tempInputs = torch.add(inputs.data,  -noiseMagnitude1, gradient)
-        outputs = net1(Variable(tempInputs))
+        outputs = reshape_output(net1(Variable(tempInputs)))
         outputs = outputs / temper
         # Calculating the confidence after adding perturbations
         nnOutputs = outputs.data.cpu()
@@ -390,14 +388,3 @@ def testUni(net1, criterion, CUDA_DEVICE, testloader_in, testloader_out, nnName,
             t0 = time.time()
 
         if j== N-1: break
-
-
-
-
-
-
-
-
-
-
-

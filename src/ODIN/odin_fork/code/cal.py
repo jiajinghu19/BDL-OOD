@@ -59,12 +59,14 @@ def test(nnName, in_dataset_name, out_data_name, CUDA_DEVICE, epsilon, temperatu
     testset_out = None
     testloader_out = None
     if out_data_name != "Uniform" and out_data_name != "Gaussian": # if the test data is not unniform or gaussian
-        # TODO MNIST
-        # TODO Fashion MNIST
         if out_data_name == "CIFAR-10": 
             testset_out = torchvision.datasets.CIFAR10(root='../data', train=False, download=True, transform=get_transform("CIFAR-10"))
         elif out_data_name == "SVHN": 
-            testset_out = torchvision.datasets.SVHN(root='svhn', split='test', download=True, transform=get_transform("SVHN"))                                
+            testset_out = torchvision.datasets.SVHN(root='svhn', split='test', download=True, transform=get_transform("SVHN"))
+        elif out_data_name == "MNIST": 
+            testset_out = torchvision.datasets.MNIST(root='mnist', train=False, download=True, transform=get_transform("MNIST"))  
+        elif out_data_name == "FashionMNIST": 
+            testset_out = torchvision.datasets.FashionMNIST(root='fashionmnist', train=False, download=True, transform=get_transform("FashionMNIST"))                               
         else:
             testset_out = torchvision.datasets.ImageFolder("../data/{}".format(out_data_name), transform=get_transform("CIFAR-10")) # load the data from the folder
         testloader_out = torch.utils.data.DataLoader(testset_out, batch_size=1,
@@ -77,13 +79,14 @@ def test(nnName, in_dataset_name, out_data_name, CUDA_DEVICE, epsilon, temperatu
         testset_in = torchvision.datasets.CIFAR100(root='../data', train=False, download=True, transform=get_transform("CIFAR-10"))
     elif in_dataset_name == "SVHN":
         testset_in = torchvision.datasets.SVHN(root='svhn', split='test', download=True, transform=get_transform("SVHN"))
+    elif in_dataset_name == "MNIST":
+        testset_in = torchvision.datasets.MNIST(root='mnist', train=False, download=True, transform=get_transform("MNIST"))
+    elif in_dataset_name == "FashionMNIST":
+        testset_in = torchvision.datasets.FashionMNIST(root='fashionmnist', train=False, download=True, transform=get_transform("FashionMNIST"))
     else:
         print("Invalid in-distribution dataset name")
     testloader_in = torch.utils.data.DataLoader(testset_in, batch_size=1,
                                         shuffle=False, num_workers=2)
-    # TODO SVHN
-    # TODO MNIST
-    # TODO Fashion MNIST
     
     if out_data_name == "Gaussian":
         d.testGaussian(net1, criterion, CUDA_DEVICE, testloader_in, testloader_in, nnName, out_data_name, epsilon, temperature)
