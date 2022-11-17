@@ -76,7 +76,7 @@ def test(nnName, in_dataset_name, out_data_name, CUDA_DEVICE, epsilon, temperatu
     elif in_dataset_name == "CIFAR-100": 
         testset_in = torchvision.datasets.CIFAR100(root='../data', train=False, download=True, transform=get_transform("CIFAR-10"))
     elif in_dataset_name == "SVHN":
-        testset_in = torchvision.datasets.CIFAR100(root='../data', train=False, download=True, transform=get_transform("SVHN"))
+        testset_in = torchvision.datasets.SVHN(root='svhn', split='test', download=True, transform=get_transform("SVHN"))
     else:
         print("Invalid in-distribution dataset name")
     testloader_in = torch.utils.data.DataLoader(testset_in, batch_size=1,
