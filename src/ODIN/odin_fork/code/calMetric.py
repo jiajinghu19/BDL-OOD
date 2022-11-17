@@ -293,6 +293,7 @@ def detection(in_dataset_name):
 
 
 def metric(nn, in_dataset_name, out_data_name):
+    nnStructure = "Densenet"
     if nn == "densenet10" or nn == "densenet100": nnStructure = "DenseNet-BC-100"
     if nn == "wideresnet10" or nn == "wideresnet100": nnStructure = "Wide-ResNet-28-10"
     
