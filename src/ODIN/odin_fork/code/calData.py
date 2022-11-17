@@ -20,6 +20,7 @@ import torchvision.transforms as transforms
 import numpy as np
 import time
 
+# this reshape is important because some densenet models output in a shape (10) instead if (1,10)
 def reshape_output(output):
     return torch.reshape(output, (1, 10))
 
