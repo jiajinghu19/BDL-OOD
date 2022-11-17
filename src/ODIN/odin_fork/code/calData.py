@@ -25,7 +25,7 @@ import numpy as np
 import time
 from scipy import misc
 
-def testData(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName, in_data_name, out_data_name, noiseMagnitude1, temper):
+def testData(net1, criterion, CUDA_DEVICE, testloader_in, testloader_out, nnName, in_data_name, out_data_name, noiseMagnitude1, temper):
     t0 = time.time()
     f1 = open("./softmax_scores/confidence_Base_In.txt", 'w')
     f2 = open("./softmax_scores/confidence_Base_Out.txt", 'w')
@@ -36,7 +36,7 @@ def testData(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName, in_
         N = 8925
         print("Processing in-distribution images")
 ########################################In-distribution###########################################
-    for j, data in enumerate(testloader10):
+    for j, data in enumerate(testloader_in):
         if j<1000: continue
         images, _ = data
         
@@ -90,7 +90,7 @@ def testData(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName, in_
     t0 = time.time()
     print("Processing out-of-distribution images")
 ###################################Out-of-Distributions#####################################
-    for j, data in enumerate(testloader):
+    for j, data in enumerate(testloader_out):
         if j<1000: continue
         images, _ = data
     
@@ -146,7 +146,7 @@ def testData(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName, in_
 
 
 
-def testGaussian(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName, out_data_name, noiseMagnitude1, temper):
+def testGaussian(net1, criterion, CUDA_DEVICE, testloader_in, testloader_out, nnName, out_data_name, noiseMagnitude1, temper):
     t0 = time.time()
     f1 = open("./softmax_scores/confidence_Base_In.txt", 'w')
     f2 = open("./softmax_scores/confidence_Base_Out.txt", 'w')
@@ -155,7 +155,7 @@ def testGaussian(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName,
 ########################################In-Distribution###############################################
     N = 10000
     print("Processing in-distribution images")
-    for j, data in enumerate(testloader10):
+    for j, data in enumerate(testloader_in):
         
         if j<1000: continue
         images, _ = data
@@ -210,7 +210,7 @@ def testGaussian(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName,
     
 ########################################Out-of-Distribution######################################
     print("Processing out-of-distribution images")
-    for j, data in enumerate(testloader):
+    for j, data in enumerate(testloader_out):
         if j<1000: continue
         
         images = torch.randn(1,3,32,32) + 0.5
@@ -271,7 +271,7 @@ def testGaussian(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName,
 
 
 
-def testUni(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName, out_data_name, noiseMagnitude1, temper):
+def testUni(net1, criterion, CUDA_DEVICE, testloader_in, testloader_out, nnName, out_data_name, noiseMagnitude1, temper):
     t0 = time.time()
     f1 = open("./softmax_scores/confidence_Base_In.txt", 'w')
     f2 = open("./softmax_scores/confidence_Base_Out.txt", 'w')
@@ -280,7 +280,7 @@ def testUni(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName, out_
 ########################################In-Distribution###############################################
     N = 10000
     print("Processing in-distribution images")
-    for j, data in enumerate(testloader10):
+    for j, data in enumerate(testloader_in):
         if j<1000: continue
         
         images, _ = data
@@ -335,7 +335,7 @@ def testUni(net1, criterion, CUDA_DEVICE, testloader10, testloader, nnName, out_
 
 ########################################Out-of-Distribution######################################
     print("Processing out-of-distribution images")
-    for j, data in enumerate(testloader):
+    for j, data in enumerate(testloader_out):
         if j<1000: continue
         
         images = torch.rand(1,3,32,32)

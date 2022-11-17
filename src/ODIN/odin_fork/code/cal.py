@@ -32,15 +32,16 @@ start = time.time()
 #loading data sets
 
 def get_transform(dataset_name=""):
+    # calData.py uses hardcoded image transforms so I'm (Harry) leaving this for now
     normalize_transform = transforms.Normalize( # default is CIFAR-10
         (125.3/255, 123.0/255, 113.9/255),
         (63.0/255, 62.1/255.0, 66.7/255.0)
     )
-    if dataset_name == "SVHN":
-        normalize_transform = transforms.Normalize(
-            (0.43768218, 0.44376934, 0.47280428), 
-            (0.1980301, 0.2010157, 0.19703591)
-        )
+    # if dataset_name == "SVHN":
+    #     normalize_transform = transforms.Normalize(
+    #         (0.43768218, 0.44376934, 0.47280428), 
+    #         (0.1980301, 0.2010157, 0.19703591)
+    #     )
     return transforms.Compose([
         transforms.ToTensor(),
         normalize_transform
