@@ -21,10 +21,23 @@ def compute_dataset_means_stds(data,name=""):
     std_b = imgs[:,2,:,:].std()
     print(name,"Stds: [",std_r,std_g,std_b,"]")
 
-cifar10 = dset.CIFAR10(root='cifar', train=True, download=True,
-                    transform=transforms.ToTensor())
-svhn = dset.SVHN(root='svhn', split='train', download=True,
+def compute_dataset_means_stds_grayscale(data,name=""):
+    imgs = [item[0] for item in data] # item[0] and item[1] are image and its label
+    imgs = torch.stack(imgs, dim=0).numpy()
+
+    mean = imgs[:,0,:,:].mean()
+    print(name,"Means: [",mean,"]")
+
+    std = imgs[:,0,:,:].std()
+    print(name,"Stds: [",std,"]")
+
+# cifar10 = dset.CIFAR10(root='cifar', train=True, download=True,
+#                     transform=transforms.ToTensor())
+# svhn = dset.SVHN(root='svhn', split='train', download=True,
+#                     transform=transforms.ToTensor())
+fashion_mnist = dset.FashionMNIST(root='FashionMNIST', train=True, download=True,
                     transform=transforms.ToTensor())
 
-compute_dataset_means_stds(cifar10,"CIFAR-10")
-compute_dataset_means_stds(svhn,"SVHN")
+# compute_dataset_means_stds(cifar10,"CIFAR-10")
+# compute_dataset_means_stds(svhn,"SVHN")
+compute_dataset_means_stds_grayscale(fashion_mnist,"FashionMNIST")
