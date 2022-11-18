@@ -56,12 +56,13 @@ def main():
     normTransform = transforms.Normalize(normMean, normStd)
 
     trainTransform = transforms.Compose([
-        # transforms.RandomCrop(32, padding=4),
+        transforms.CenterCrop(32),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         normTransform
     ])
     testTransform = transforms.Compose([
+        transforms.CenterCrop(32),
         transforms.ToTensor(),
         normTransform
     ])
