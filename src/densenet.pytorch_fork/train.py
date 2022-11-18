@@ -160,9 +160,10 @@ def train(args, epoch, net, trainLoader, optimizer, trainF):
         incorrect = pred.ne(target.data).cpu().sum()
         err = 100.*incorrect/len(data)
         partialEpoch = epoch + batch_idx / len(trainLoader) - 1
-        print('Train Epoch: {:.2f} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tError: {:.6f}'.format(
-            partialEpoch, nProcessed, nTrain, 100. * batch_idx / len(trainLoader),
-            loss.data.item(), err))
+        if round(partialEpoch*1000) % 50 == 0:
+            print('Train Epoch: {:.2f} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tError: {:.6f}'.format(
+                partialEpoch, nProcessed, nTrain, 100. * batch_idx / len(trainLoader),
+                loss.data.item(), err))
 
         trainF.write('{},{},{}\n'.format(partialEpoch, loss.data.item(), err))
         trainF.flush()
