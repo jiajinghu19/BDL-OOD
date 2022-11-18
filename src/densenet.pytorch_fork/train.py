@@ -67,6 +67,7 @@ def main():
 
     train_dataset = None
     test_dataset = None
+    input_channels = 3
     if args.dataset == "svhn":
         train_dataset = dset.SVHN(root='svhn', split='train', download=True,
                     transform=trainTransform)
@@ -77,6 +78,7 @@ def main():
                     transform=trainTransform)
         test_dataset = dset.FashionMNIST(root='FashionMNIST', train=False, download=True,
                     transform=testTransform)
+        input_channels = 1
     else: #cifar10
         train_dataset = dset.CIFAR10(root='cifar', train=True, download=True,
                      transform=trainTransform)
@@ -92,7 +94,7 @@ def main():
         batch_size=args.batchSz, shuffle=False, **kwargs)
 
     net = densenet.DenseNet(growthRate=12, depth=100, reduction=0.5,
-                            bottleneck=True, nClasses=10)
+                            bottleneck=True, nClasses=10,input_channels=input_channels)
 
     print('  + Number of params: {}'.format(
         sum([p.data.nelement() for p in net.parameters()])))

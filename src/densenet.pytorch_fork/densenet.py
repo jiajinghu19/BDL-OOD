@@ -58,7 +58,7 @@ class Transition(nn.Module):
 
 
 class DenseNet(nn.Module):
-    def __init__(self, growthRate, depth, reduction, nClasses, bottleneck):
+    def __init__(self, growthRate, depth, reduction, nClasses, bottleneck,input_channels=3):
         super(DenseNet, self).__init__()
 
         nDenseBlocks = (depth-4) // 3
@@ -66,7 +66,7 @@ class DenseNet(nn.Module):
             nDenseBlocks //= 2
 
         nChannels = 2*growthRate
-        self.conv1 = nn.Conv2d(3, nChannels, kernel_size=3, padding=1,
+        self.conv1 = nn.Conv2d(input_channels, nChannels, kernel_size=3, padding=1,
                                bias=False)
         self.dense1 = self._make_dense(nChannels, growthRate, nDenseBlocks, bottleneck)
         nChannels += nDenseBlocks*growthRate
