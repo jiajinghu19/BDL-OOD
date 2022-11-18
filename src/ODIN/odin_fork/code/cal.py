@@ -42,6 +42,8 @@ def get_transform(dataset_name=""):
     #         (0.43768218, 0.44376934, 0.47280428), 
     #         (0.1980301, 0.2010157, 0.19703591)
     #     )
+    if dataset_name == "MNIST" or dataset_name == "FashionMNIST":
+        normalize_transform = transforms.Normalize((0.5,), (0.5,))
     return transforms.Compose([
         transforms.ToTensor(),
         normalize_transform
