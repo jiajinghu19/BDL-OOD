@@ -28,7 +28,7 @@ def main():
     parser.add_argument('--opt', type=str, default='sgd',
                         choices=('sgd', 'adam', 'rmsprop'))
     parser.add_argument('--dataset', type=str, default='cifar10',
-                        choices=('cifar10', 'svhn'))
+                        choices=('cifar10', 'svhn', 'FashionMNIST'))
     args = parser.parse_args()
 
     args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -48,7 +48,7 @@ def main():
     if args.dataset == "svhn": # calculated using `compute_dataset_means_stds.py`
         normMean = [ 0.43768218, 0.44376934, 0.47280428 ] 
         normStd = [ 0.1980301, 0.2010157, 0.19703591 ]
-    if args.dataset == "fashionmnist": # calculated using `compute_dataset_means_stds.py`
+    if args.dataset == "FashionMNIST": # calculated using `compute_dataset_means_stds.py`
         normMean = [ 0.2860402 ] 
         normStd = [ 0.3530239 ]
 
