@@ -29,6 +29,7 @@ def main():
                         choices=('sgd', 'adam', 'rmsprop'))
     parser.add_argument('--dataset', type=str, default='cifar10',
                         choices=('cifar10', 'svhn', 'FashionMNIST'))
+    parser.add_argument('--early_stop', type=int, default=20) # stop training early if the model starts overfitting
     args = parser.parse_args()
 
     args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -112,12 +113,29 @@ def main():
     trainF = open(os.path.join(args.save, 'train.csv'), 'w')
     testF = open(os.path.join(args.save, 'test.csv'), 'w')
 
+    best_test_error = None
+    best_test_epoch = None
+    early_stopping_counter = 0
     for epoch in range(1, args.nEpochs + 1):
         adjust_opt(args.opt, optimizer, epoch)
         train(args, epoch, net, trainLoader, optimizer, trainF)
-        test(args, epoch, net, testLoader, optimizer, testF)
-        torch.save(net, os.path.join(args.save, 'latest.pth'))
+        test_error = test(args, epoch, net, testLoader, optimizer, testF)
+        if (best_test_error is None) or (test_error<best_test_error): # if this is the new best test error
+            best_test_error = test_error # record the new best test error
+            best_test_epoch = epoch # record the epoch at which this was saved
+            early_stopping_counter = 0 # reset the early stopping counter
+            torch.save(net, os.path.join(args.save, 'best_test_error.pth'))
+            print("SAVED BEST TEST ERROR. Epoch ", best_test_epoch, ", Error ", test_error)
+        else:
+            early_stopping_counter = early_stopping_counter + 1 # increment the early stopping counter
+            torch.save(net, os.path.join(args.save, 'latest.pth'))
         os.system('./plot.py {} &'.format(args.save))
+
+        if early_stopping_counter >= args.early_stop: # if we should stop early
+            print("Stopping early at epoch {}. Best saved model at epoch {}. Best test error {}".format(
+                epoch,best_test_epoch, best_test_error
+            ))
+            break
 
     trainF.close()
     testF.close()
@@ -170,6 +188,7 @@ def test(args, epoch, net, testLoader, optimizer, testF):
 
     testF.write('{},{},{}\n'.format(epoch, test_loss, err))
     testF.flush()
+    return err
 
 def adjust_opt(optAlg, optimizer, epoch):
     if optAlg == 'sgd':
