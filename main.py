@@ -10,12 +10,14 @@ from collections import OrderedDict
 from torch.nn import functional as F
 from torchvision import datasets, transforms
 from torchvision.utils import save_image
+from sklearn.metrics import auc, precision_recall_curve, roc_curve
 
 from src.VAE.vae import VariationalAutoencoder
 from utils.load_data import load_data
+from utils.generate_plots import calc_ROC_PR_data
 
 def eval_model_on_data(
-        model, dataset_nickname, data_loader, device, args):
+        model, dataset_nickname, data_loader, args):
     ''' Evaluate an encoder/decoder model on a dataset
 
     Returns
@@ -31,9 +33,9 @@ def eval_model_on_data(
     n_seen = 0
     total_1pix = 0.0
     for batch_idx, (batch_data, _) in enumerate(data_loader):
-        batch_x_ND = batch_data.to(device).view(-1, model.n_dims_data)
+        batch_x_ND = batch_data.to(args.device).view(-1, model.n_dims_data)
         total_1pix += torch.sum(batch_x_ND)
-        _, loss, _ = model.calc_vi_loss(batch_x_ND, n_mc_samples=args.n_mc_samples)
+        loss, _ = model.calc_vi_loss(batch_x_ND, n_mc_samples=args.n_mc_samples)
         total_vi_loss += loss.item()
 
         # Use deterministic reconstruction to evaluate bce and l1 terms
@@ -57,8 +59,8 @@ def predict_on_data(model, data_loader, args):
     if args.method == "VAE":
         for batch_idx, (batch_data, _) in enumerate(data_loader):
             batch_x_ND = batch_data.to(args.device).view(-1, model.n_dims_data)
-            loss, _, _ = model.calc_vi_loss(batch_x_ND, n_mc_samples=args.n_mc_samples)
-            probas.extend(loss.tolist())
+            loss, _ = model.calc_vi_loss(batch_x_ND, n_mc_samples=args.n_mc_samples)
+            probas.append(loss.item())
     return probas
     
 
@@ -84,10 +86,13 @@ if __name__ == "__main__":
         '--hidden_layer_sizes', type=str, default='512',
         help='Comma-separated list of size values (default: "512")')
     parser.add_argument(
-        '--filename_prefix', type=str, default='$method-arch=$hidden_layer_sizes-lr=$lr')
+        '--filename_prefix', type=str, default='$method-arch=$hidden_layer_sizes-z=$n_dims_code-lr=$lr')
     parser.add_argument(
         '--q_sigma', type=float, default=0.1,
         help='Fixed variance of approximate posterior (default: 0.1)')
+    parser.add_argument(
+        '--n_dims_code', type=float, default=2,
+        help='Dimension of z (default: 2)')
     parser.add_argument(
        '--n_mc_samples', type=int, default=1,
        help='Number of Monte Carlo samples (default: 1)')
@@ -122,6 +127,7 @@ if __name__ == "__main__":
         pass
     elif args.method == 'VAE':
         model = VariationalAutoencoder(
+            n_dims_code=args.n_dims_code,
             n_dims_data=n_dims_data,
             q_sigma=args.q_sigma,
             hidden_layer_sizes=args.hidden_layer_sizes).to(device)
@@ -129,11 +135,12 @@ if __name__ == "__main__":
         raise ValueError("Method must be 'ODIN' or 'VAE'")
 
     eval_batch_size = 20000
-
+    test_batch_size = 1
     ## Create generators for grabbing batches of train or test data
     # Each loader will produce **binary** data arrays (using transforms defined below)
     train_loader, train_eval_loader, test_loader_in, test_loader_out = load_data(train_dataset=args.train_data,
-    train_batch_size=args.batch_size, eval_batch_size=eval_batch_size, S=S)
+    train_batch_size=args.batch_size, eval_batch_size=eval_batch_size, 
+    test_batch_size = test_batch_size, S=S)
 
 
     ## Create an optimizer linked to the model parameters
@@ -165,14 +172,14 @@ if __name__ == "__main__":
 
         ## Compute VI loss (bce + kl), bce alone, and l1 alone
         tr_loss, tr_l1, tr_bce, tr_msg = eval_model_on_data(
-            tmp_vae_model, 'train', train_eval_loader, device, args)
+            tmp_vae_model, 'train', train_eval_loader, args)
         if epoch == 0:
             print(tr_msg) # descriptive stats of tr data
         print('  epoch %3d  on train per-pixel VI-loss %.3f  bce %.3f  l1 %.3f' % (
             epoch, tr_loss, tr_bce, tr_l1))
 
         te_loss, te_l1, te_bce, te_msg = eval_model_on_data(
-            tmp_vae_model, 'test', test_loader_in, device, args)
+            tmp_vae_model, 'test', test_loader_in, args)
         if epoch == 0:
             print(te_msg) # descriptive stats of test data
         print('  epoch %3d  on test  per-pixel VI-loss %.3f  bce %.3f  l1 %.3f' % (
@@ -222,5 +229,10 @@ if __name__ == "__main__":
         print(f"====  done with eval at epoch {epoch}" )
 
     ## making predictions
-    # pred_probas_in = predict_on_data(model, test_loader_in, args)
-    # pred_probas_out = predict_on_data(model, test_loader_out, args)
+    pred_probas_in = predict_on_data(model, test_loader_in, args)
+    pred_probas_out = predict_on_data(model, test_loader_out, args)
+    fpr, tpr, roc_auc, precision, recall, pr_auc = calc_ROC_PR_data(pred_probas_in, pred_probas_out, args)
+    metrics = pd.DataFrame(fpr, tpr, precision, recall).T
+    metrics.columns = ['fpr', 'tpr', 'precision', 'recall']
+    metrics.to_csv(f'data/curves/{args.filename_prefix}-{args.train_data}.csv', index=False)
+    

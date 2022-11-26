@@ -31,6 +31,7 @@ class VariationalAutoencoder(nn.Module):
         self.encoder_params = nn.ModuleList()
         for layer_id, (n_in, n_out) in enumerate(zip(
                 encoder_layer_sizes[:-1], encoder_layer_sizes[1:])):
+            print('n_in: ', n_in, ' n_out: ', n_out)
             self.encoder_params.append(nn.Linear(n_in, n_out))
             self.encoder_activations.append(F.relu)
         self.encoder_activations[-1] = lambda a: a
@@ -107,20 +108,21 @@ class VariationalAutoencoder(nn.Module):
     def calc_vi_loss(self, x_ND, n_mc_samples=1):
         total_loss = 0.0
         mu_NC = self.encode(x_ND)
-        loss = []
         for ss in range(n_mc_samples):
             sample_z_NC = self.draw_sample_from_q(mu_NC)
             sample_xproba_ND = self.decode(sample_z_NC)
             sample_bce_loss = F.binary_cross_entropy(sample_xproba_ND, x_ND, reduction='sum')# <- TODO fix me
-
+            # print(x_ND)
+            # print(sample_xproba_ND)
             # KL divergence from q(mu, sigma) to prior (std normal)
             # see Appendix B from VAE paper
             # https://arxiv.org/pdf/1312.6114.pdf
             kl = -0.5*torch.sum(1+torch.log(torch.square(self.q_sigma))-torch.square(mu_NC)-torch.square(self.q_sigma))                  # <- TODO fix me
+            # print('bce loss: ',  sample_bce_loss)
+            
             total_loss += sample_bce_loss + kl
-            loss.append(sample_bce_loss + kl)
 
-        return loss, total_loss / float(n_mc_samples), sample_xproba_ND
+        return total_loss / float(n_mc_samples), sample_xproba_ND
 
 
     def train_for_one_epoch_of_gradient_update_steps(
@@ -147,7 +149,7 @@ class VariationalAutoencoder(nn.Module):
             optimizer.zero_grad()
 
             # Compute the loss (and the required reconstruction as well)
-            _, loss, batch_xproba_ND = self.calc_vi_loss(
+            loss, batch_xproba_ND = self.calc_vi_loss(
                 batch_x_ND, n_mc_samples=args.n_mc_samples)
 
             # Increment the total loss (over all batches)

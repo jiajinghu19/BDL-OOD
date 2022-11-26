@@ -1,33 +1,37 @@
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, precision_recall_curve
 import matplotlib.pyplot as plt
+import numpy as np
 
-def generate_curves(type, pred_probas, label, args):
-    if type == 'ROC':
-        fpr = dict()
-        tpr = dict()
-        roc_auc = dict()
-        for i in range(2):
-            fpr[i], tpr[i], _ = roc_curve(label[:, i], pred_probas[:, i])
-            roc_auc[i] = auc(fpr[i], tpr[i])
+def calc_ROC_PR_data(ID_probabilities, OOD_probabilities, args):
+    ID_labels = np.ones_like(ID_probabilities)
+    OOD_labels = np.zeros_like(OOD_probabilities)
 
-        fpr["micro"], tpr["micro"], _ = roc_curve(label.ravel(), pred_probas.ravel())
-        roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+    (fpr,tpr,thresholds) = roc_curve(
+        np.concatenate((ID_labels, OOD_labels),axis=0),
+        np.concatenate((ID_probabilities, OOD_probabilities),axis=0),
+    )
 
-        plt.figure()
-        lw = 2
-        plt.plot(
-            fpr[2],
-            tpr[2],
-            color="darkorange",
-            lw=lw,
-            label="ROC curve (area = %0.2f)" % roc_auc[2],
-        )
-        plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
-        plt.xlim([0.0, 1.0])
-        plt.ylim([0.0, 1.05])
-        plt.xlabel("False Positive Rate")
-        plt.ylabel("True Positive Rate")
-        plt.title("Receiver operating characteristic example")
-        plt.legend(loc="lower right")
-        plt.show()
-        plt.savefig(f'data/samples/{args.filename_prefix}-{args.train_data}-{type}.png')
+    (precision,recall,thresholds) = precision_recall_curve(
+        np.concatenate((ID_labels, OOD_labels),axis=0),
+        np.concatenate((ID_probabilities, OOD_probabilities),axis=0),
+    )
+
+    roc_auc = auc(fpr, tpr)
+    pr_auc = auc(recall, precision)
+
+    plt.figure(1).clf()
+    plt.title( "ROC Curves")
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.plot(fpr,tpr,label="VAE, AUROC={:.3f}".format(roc_auc))
+    plt.legend(loc=0)
+    plt.savefig(f'data/curves/{args.filename_prefix}-{args.train_data}_roc_curve.png')
+
+    plt.figure(2).clf()
+    plt.title("PR Curves")
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.plot(recall,precision,label="VAE, AUPR={:.3f}".format(pr_auc))
+    plt.legend(loc='best')
+    plt.savefig(f'data/curves/{args.filename_prefix}-{args.train_data}_pr_curve.png')
+    return fpr, tpr, roc_auc, precision, recall, pr_auc
