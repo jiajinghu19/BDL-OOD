@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import auc, precision_recall_curve, roc_curve
 
-PARENT_DIRECTORY = "./Train_MNIST_Test_FashionMNIST/" # set the parent directory of the text file results
-TITLE = "ODIN vs Baseline - Train MNIST, Test Fashion MNIST - " # title of the plots
+PARENT_DIRECTORY = "./Train_FashionMNIST_Test_MNIST/" # set the parent directory of the text file results
+TITLE = "ODIN vs Baseline - Train Fashion MNIST, Test MNIST - " # title of the plots
 
 baseline_ID_data = np.loadtxt(PARENT_DIRECTORY+'confidence_Base_In.txt', delimiter=',')
 baseline_OOD_data = np.loadtxt(PARENT_DIRECTORY+'confidence_Base_Out.txt', delimiter=',')
