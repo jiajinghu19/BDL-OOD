@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import auc, precision_recall_curve, roc_curve
 
-PARENT_DIRECTORY = "./Train_FashionMNIST_Test_MNIST/" # set the parent directory of the text file results
-TITLE = "ODIN vs Baseline - Train Fashion MNIST, Test MNIST - " # title of the plots
+PARENT_DIRECTORY = "./Train_SVHN_Test_CIFAR-10/" # set the parent directory of the text file results
+TITLE = "ODIN vs Baseline - Train SVHN, Test CIFAR-10 - " # title of the plots
 
 baseline_ID_data = np.loadtxt(PARENT_DIRECTORY+'confidence_Base_In.txt', delimiter=',')
 baseline_OOD_data = np.loadtxt(PARENT_DIRECTORY+'confidence_Base_Out.txt', delimiter=',')
@@ -63,8 +63,8 @@ plt.figure(2).clf()
 plt.title(TITLE + "PR Curves")
 plt.xlabel('Recall')
 plt.ylabel('Precision')
-plt.plot(baseline_precision,baseline_recall,label="Baseline, AUPR={:.3f}".format(baseline_aupr))
-plt.plot(ODIN_precision,ODIN_recall,label="ODIN, AUPR={:.3f}".format(ODIN_aupr))
+plt.plot(baseline_recall,baseline_precision,label="Baseline, AUPR={:.3f}".format(baseline_aupr))
+plt.plot(ODIN_recall,ODIN_precision,label="ODIN, AUPR={:.3f}".format(ODIN_aupr))
 plt.legend(loc='best')
 plt.savefig(PARENT_DIRECTORY+'pr_curve.png')
 
