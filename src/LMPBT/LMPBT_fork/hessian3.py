@@ -100,7 +100,7 @@ class hessian():
                ]  # accumulate result
         for inputs, targets in self.data:
             count += 1
-            print(count)
+            # print(count)
             inputs = inputs.to(device)
             target = Variable(inputs.data.view(-1) * 255).long()
             self.model_e.zero_grad()
@@ -247,7 +247,7 @@ class hessian():
             beta_list = []
             ############### Lanczos
             for i in range(iter):
-                print(i)
+                # print(i)
                 self.model.zero_grad()
                 w_prime = [torch.zeros(p.size()).to(device) for p in self.params]
                 if i == 0:
