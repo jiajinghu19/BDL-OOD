@@ -70,14 +70,14 @@ class hessian():
             self.full_dataset = True
 
         if cuda:
-            self.device = 'cuda:1'
+            self.device = 'cuda:0'
         else:
             self.device = 'cpu'
 
         # pre-processing for single batch case to simplify the computation.
         if not self.full_dataset:
             self.inputs, self.targets = self.data
-            if self.device == 'cuda':
+            if self.device == 'cuda:0':
                 self.inputs, self.targets = self.inputs.cuda(
                 ), self.targets.cuda()
 

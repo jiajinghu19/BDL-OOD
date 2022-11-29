@@ -223,11 +223,11 @@ if __name__ == "__main__":
     print('Building models...')
     netG = DVAE.DCGAN_G(opt.image_size, nz, nc, ngf, ngpu)
     state_G = torch.load(opt.state_G, map_location=device)
-    netG.load_state_dict(state_G)
+    netG.load_state_dict(state_G, strict=False)
 
     netE = DVAE.Encoder(opt.image_size, nz, nc, ngf, ngpu)
     state_E = torch.load(opt.state_E, map_location=device)
-    netE.load_state_dict(state_E)
+    netE.load_state_dict(state_E, strict=False)
 
     netG.to(device)
     netG.eval()

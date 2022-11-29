@@ -60,7 +60,7 @@ if __name__=="__main__":
     parser.add_argument('--image_size', type=int, default=32, help='the height / width of the input image to network')
     parser.add_argument('--nc', type=int, default=3, help='input image channels')
     parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
-    parser.add_argument('--ngf', type=int, default=32)
+    parser.add_argument('--ngf', type=int, default=64)
     parser.add_argument('--batch_size', type=int, default=1, help='input batch size')
 
     parser.add_argument('--repeat', type=int, default=200)
@@ -90,11 +90,11 @@ if __name__=="__main__":
     print('Building models...')
     netG = DVAE.DCGAN_G(opt.image_size, nz, nc, ngf, ngpu)
     state_G = torch.load(opt.state_G, map_location = device)
-    netG.load_state_dict(state_G)
+    netG.load_state_dict(state_G, strict=False)
     
     netE = DVAE.Encoder(opt.image_size, nz, nc, ngf, ngpu)
     state_E = torch.load(opt.state_E, map_location = device)
-    netE.load_state_dict(state_E)
+    netE.load_state_dict(state_E, strict=False)
     
     
     netG.to(device)
