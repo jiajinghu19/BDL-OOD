@@ -158,12 +158,12 @@ class hessian():
             v = [torch.randn(p.size()).to(device) for p in self.params
                  ]  # generate random vector
             v = normalization(v)  # normalize the vector
-            print(computed_dim)
+            # print(computed_dim)
             for i in range(maxIter):
                 v = orthnormal(v, eigenvectors)
                 self.model_e.zero_grad()
-                print('ith')
-                print(i)
+                # print('ith')
+                # print(i)
                 if self.full_dataset:
                     tmp_eigenvalue, Hv = self.dataloader_hv_product(v)
                 else:
