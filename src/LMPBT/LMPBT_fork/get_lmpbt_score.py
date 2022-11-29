@@ -258,5 +258,5 @@ if __name__ == "__main__":
     out_distro_nll = compute_likelihood(out_distro_dataset , netE, netG, eig_val, eig_vec, eig_val2, eig_vec2,
                                 dic_param['indices'], loss_fn)
 
-    np.save('in_distro_nll_vae', in_distro_nll.cpu().detach().numpy())
-    np.save('out_distro_nll_vae', out_distro_nll.cpu().detach().numpy())
+    np.save('in_distro_nll_vae.npy', in_distro_nll.cpu().detach().numpy())
+    np.save('out_distro_nll_vae.npy', out_distro_nll.cpu().detach().numpy())

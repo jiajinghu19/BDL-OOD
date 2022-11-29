@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from sklearn import metrics
 
 
-IN_DISTRO_RESULTS = 'svhn100_nll_vae.npy'
-OUT_DISTRO_RESULTS = 'cifar100_nll_vae.npy'
+IN_DISTRO_RESULTS = 'in_distro_nll_vae.npy'
+OUT_DISTRO_RESULTS = 'out_distro_nll_vae.npy'
 
 nll_in_distro = np.load(IN_DISTRO_RESULTS)
 nll_out_distro = np.load(OUT_DISTRO_RESULTS)
