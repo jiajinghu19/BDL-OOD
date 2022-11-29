@@ -15,6 +15,7 @@ import DCGAN_VAE_pixel as DVAE
 import torch.nn.functional as F
 from pathlib import Path
 import os
+from get_torchvision_dataset import get_torchvision_dataset
 
 def KL_div(mu,logvar,reduction = 'avg'):
     mu = mu.view(mu.size(0),mu.size(1))
@@ -72,24 +73,11 @@ if __name__=="__main__":
 
     cudnn.benchmark = True
 
-    dataset = None
-    dataloader = None
     transform = transforms.Compose([
         transforms.Resize((opt.image_size)),
         transforms.ToTensor(),
     ])
-    if opt.dataset == "MNIST":
-        dataset = dset.MNIST(root="./MNIST", train=True, download=True, transform=transform)
-    elif opt.dataset == "FashionMNIST":
-        dataset = dset.FashionMNIST(root="./FashionMNIST", train=True, download=True, transform=transform)
-    elif opt.dataset == "SVHN":
-        dataset = dset.SVHN(root="./SVHN", split='train', download=True, transform=transform)
-    elif opt.dataset == "CIFAR10":
-        dataset = dset.CIFAR10(root="./CIFAR10", train=True, download=True, transform=transform)
-    elif opt.dataset == "CIFAR100":
-        dataset = dset.CIFAR100(root="./CIFAR100", train=True, download=True, transform=transform)
-    else:
-        raise ValueError("opt.dataset is invalid, received {}".format(opt.dataset))
+    dataset = get_torchvision_dataset(opt.dataset, True, transform)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True, num_workers=int(opt.workers))
 
     ngpu = int(opt.ngpu)

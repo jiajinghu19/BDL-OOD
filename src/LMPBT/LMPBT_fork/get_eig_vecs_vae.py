@@ -11,7 +11,7 @@ from torch.autograd import Variable
 import DCGAN_VAE_pixel as DVAE
 import torch.nn.functional as F
 from hessian3 import hessian
-import get_torchvision_dataset
+from get_torchvision_dataset import get_torchvision_dataset
 
 def KL_div(mu,logvar,reduction = 'none'):
     mu = mu.view(mu.size(0),mu.size(1))
@@ -68,9 +68,6 @@ if __name__=="__main__":
     
     parser.add_argument('--state_E', default='./models/netE_pixel.pth', help='path to encoder checkpoint')
     parser.add_argument('--state_G', default='./models/netE_pixel.pth', help='path to encoder checkpoint')
-
-    parser.add_argument('--state_E_bg', default='./saved_models/cifar/netE_pixel_bg.pth', help='path to encoder checkpoint')
-    parser.add_argument('--state_G_bg', default='./saved_models/cifar/netE_pixel_bg.pth', help='path to encoder checkpoint')
 
     opt = parser.parse_args()
     

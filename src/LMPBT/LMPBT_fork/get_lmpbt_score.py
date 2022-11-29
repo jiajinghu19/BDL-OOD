@@ -12,7 +12,7 @@ import torch.nn.functional as F
 import torch
 import torchvision.transforms as transforms
 import time
-import get_torchvision_dataset
+from get_torchvision_dataset import get_torchvision_dataset
 
 def KL_div(mu, logvar, reduction='none'):
     mu = mu.view(mu.size(0), mu.size(1))

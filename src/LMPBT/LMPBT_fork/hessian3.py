@@ -23,7 +23,7 @@ from torch.autograd import Variable
 import numpy as np
 
 from utils import group_product, group_add, normalization, get_params_grad, hessian_vector_product, orthnormal
-from density_plot import get_esd_plot
+# from density_plot import get_esd_plot
 
 
 def KL_div(mu, logvar, reduction='none'):
