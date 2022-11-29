@@ -13,6 +13,8 @@ import torchvision.transforms as transforms
 from torch.autograd import Variable
 import DCGAN_VAE_pixel as DVAE
 import torch.nn.functional as F
+from pathlib import Path
+import os
 
 def KL_div(mu,logvar,reduction = 'avg'):
     mu = mu.view(mu.size(0),mu.size(1))
@@ -62,6 +64,7 @@ if __name__=="__main__":
 
     if opt.experiment is None:
         opt.experiment = './models/{}'.format(opt.dataset)
+    Path(opt.experiment).mkdir(parents=True, exist_ok=True)
     opt.manualSeed = random.randint(1, 10000) # fix seed
     print("Random Seed: ", opt.manualSeed)
     random.seed(opt.manualSeed)
@@ -159,5 +162,5 @@ if __name__=="__main__":
             if not i % 100:
                 print('epoch:{} recon:{} kl:{}'.format(epoch,np.mean(rec_l),np.mean(kl)
                     ))
-    torch.save(netG.state_dict(), './models/cifar100_netG.pth')
-    torch.save(netE.state_dict(), './models/cifar100_netE.pth')
+    torch.save(netG.state_dict(), os.path.join(opt.experiment,'{}_netG.pth'.format(opt.dataset)))
+    torch.save(netE.state_dict(), os.path.join(opt.experiment,'{}_netE.pth'.format(opt.dataset)))
