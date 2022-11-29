@@ -6,16 +6,12 @@ import torch.nn as nn
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.utils.data
-import torchvision.datasets as dset
 import torchvision.transforms as transforms
 from torch.autograd import Variable
 import DCGAN_VAE_pixel as DVAE
 import torch.nn.functional as F
-from torch.utils.data import Dataset
-import torchvision
 from hessian3 import hessian
-from density_plot2 import get_esd_plot
-
+import get_torchvision_dataset
 
 def KL_div(mu,logvar,reduction = 'none'):
     mu = mu.view(mu.size(0),mu.size(1))
@@ -56,10 +52,12 @@ def compute_NLL(weights):
 if __name__=="__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataroot', default='./data', help='path to dataset')
+    parser.add_argument('--training_dataset', default='CIFAR10', help='path to training dataset')
+    parser.add_argument('--eigenvalues', default='./eigenvalues_50_vae_cifar100.npy', help='path to eigenvalues file')
+    parser.add_argument('--eigenvectors', default='./eigenvectors_50_vae_cifar100.npy', help='path to eigenvectors file')
 
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=0)
-    parser.add_argument('--imageSize', type=int, default=32, help='the height / width of the input image to network')
+    parser.add_argument('--image_size', type=int, default=32, help='the height / width of the input image to network')
     parser.add_argument('--nc', type=int, default=3, help='input image channels')
     parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
     parser.add_argument('--ngf', type=int, default=32)
@@ -78,54 +76,26 @@ if __name__=="__main__":
     
     cudnn.benchmark = True
     device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
-    '''
-    dataset_fmnist = dset.FashionMNIST(root=opt.dataroot, train=Fpytalse, download=True, transform=transforms.Compose([
-                                transforms.Resize(opt.imageSize),
-                                transforms.ToTensor()
-                            ]))
-    dataloader_fmnist = torch.utils.data.DataLoader(dataset_fmnist, batch_size=opt.batch_size,
-                                            shuffle=True, num_workers=int(opt.workers))
-
-    dataset_mnist = dset.MNIST(root=opt.dataroot, train=False, download=True, transform=transforms.Compose([
-                                transforms.Resize(opt.imageSize),
-                                transforms.ToTensor()
-                            ]))
-
-    dataloader_mnist = torch.utils.data.DataLoader(dataset_mnist, batch_size=opt.batch_size,
-                                            shuffle=True, num_workers=int(opt.workers))
-    '''
-        
     
-    transform_train = transforms.Compose([
-                            transforms.Resize(32),
-                            
-                            transforms.ToTensor()
-                        ])
-
-    dataset_cifar_train = dset.CIFAR10(root=opt.dataroot, download=True, train=True,
-                                       transform=transforms.Compose([
-                                           transforms.Resize(32),
-                                           transforms.ToTensor()
-                                       ]))
-    #dataset_fmnist_train = torchvision.datasets.FashionMNIST(root='data', train=True, download=True, transform=transform_train)
-    dataset_fmnist_test = torchvision.datasets.FashionMNIST(root='data', train=False, download=True, transform=transform_train)
-    testloader = torch.utils.data.DataLoader(dataset_fmnist_test, batch_size=32,
-                                        shuffle=False, num_workers=6)
-
-    train_cifar100 = torchvision.datasets.CIFAR100(root='data', train=True, download=False, transform=transform_train)
-    trainloader = torch.utils.data.DataLoader(train_cifar100, batch_size=32,
+    transform = transforms.Compose([
+        transforms.Resize(32),
+        transforms.ToTensor()
+    ])
+    training_dataset = get_torchvision_dataset(opt.training_dataset, True, transform)
+    trainloader = torch.utils.data.DataLoader(training_dataset, batch_size=32,
                                               shuffle=True, num_workers=6)
 
     ngpu = int(opt.ngpu)
     nz = int(opt.nz)
     ngf = int(opt.ngf)
-    nc = 3
+    nc = int(opt.nc)
+
     print('Building models...')
-    netG = DVAE.DCGAN_G(opt.imageSize, nz, nc, ngf, ngpu)
+    netG = DVAE.DCGAN_G(opt.image_size, nz, nc, ngf, ngpu)
     state_G = torch.load(opt.state_G, map_location = device)
     netG.load_state_dict(state_G)
     
-    netE = DVAE.Encoder(opt.imageSize, nz, nc, ngf, ngpu)
+    netE = DVAE.Encoder(opt.image_size, nz, nc, ngf, ngpu)
     state_E = torch.load(opt.state_E, map_location = device)
     netE.load_state_dict(state_E)
     
@@ -138,9 +108,6 @@ if __name__=="__main__":
     loss_fn = nn.CrossEntropyLoss(reduction = 'none')
     
     print('Building complete...')
-    '''
-    First run through the VAE and record the ELBOs of each image in fmnist and mnist
-    '''
     NLL_test_indist = []
     NLL_test_indist_bg = []
         
@@ -156,8 +123,8 @@ if __name__=="__main__":
     evals = []
     for i in range(len(eigenvectors)):
         ev.append(torch.cat([p.flatten() for p in eigenvectors[i]]).cpu().detach().numpy() )
-    np.save('eigenvalues_50_vae_cifar100.npy', np.asarray(eigenvalues) )
-    np.save('eigenvectors_50_vae_cifar100.npy', ev )
+    np.save(opt.eigenvalues, np.asarray(eigenvalues) )
+    np.save(opt.eigenvectors, ev )
 
             
     

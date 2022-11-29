@@ -6,17 +6,14 @@ import torch.nn as nn
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.utils.data
-import torchvision.datasets as dset
 from torch.autograd import Variable
 import DCGAN_VAE_pixel as DVAE
 import torch.nn.functional as F
-from torch.utils.data import Dataset
 import torch
-import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
-from hessian2 import hessian
 import time
-import os
+import get_torchvision_dataset
+
 def KL_div(mu, logvar, reduction='none'):
     mu = mu.view(mu.size(0), mu.size(1))
     logvar = logvar.view(logvar.size(0), logvar.size(1))
@@ -186,10 +183,13 @@ def compute_likelihood(dataset, model, model_g, eig_val, eig_vec, eig_val2, eig_
 if __name__ == "__main__":
     ################################################## Model arguments ##################################################################
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataroot', default='./data', help='path to dataset')
+    parser.add_argument('--in_distro_dataset', default='CIFAR10', help='path to in distribution dataset')
+    parser.add_argument('--out_distro_dataset', default='CIFAR10', help='path to out of distribution dataset')
+    parser.add_argument('--eigenvalues', default='./eigenvalues_50_vae_cifar100.npy', help='path to eigenvalues file')
+    parser.add_argument('--eigenvectors', default='./eigenvectors_50_vae_cifar100.npy', help='path to eigenvectors file')
 
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=0)
-    parser.add_argument('--imageSize', type=int, default=32, help='the height / width of the input image to network')
+    parser.add_argument('--image_size', type=int, default=32, help='the height / width of the input image to network')
     parser.add_argument('--nc', type=int, default=3, help='input image channels')
     parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
     parser.add_argument('--ngf', type=int, default=64)
@@ -199,103 +199,33 @@ if __name__ == "__main__":
     parser.add_argument('--ngpu', type=int, default=1, help='number of GPUs to use')
 
     parser.add_argument('--state_E', default='./models/cifar100_netE.pth', help='path to encoder checkpoint')
-    parser.add_argument('--state_G', default='./models/cifar100_netG.pth', help='path to encoder checkpoint')
-
-    parser.add_argument('--state_E_bg', default='./saved_models/fmnist/netE_pixel_bg.pth',
-                        help='path to encoder checkpoint')
-    parser.add_argument('--state_G_bg', default='./saved_models/fmnist/netG_pixel_bg.pth',
-                        help='path to encoder checkpoint')
+    parser.add_argument('--state_G', default='./models/cifar100_netG.pth', help='path to generator checkpoint')
 
     opt = parser.parse_args()
 
     cudnn.benchmark = True
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    '''
-    dataset_fmnist = dset.FashionMNIST(root=opt.dataroot, train=False, download=True, transform=transforms.Compose([
-                                transforms.Resize(opt.imageSize),
-                                transforms.ToTensor()
-                            ]))
-    dataloader_fmnist = torch.utils.data.DataLoader(dataset_fmnist, batch_size=opt.batch_size,
-                                            shuffle=True, num_workers=int(opt.workers))
 
-    dataset_mnist = dset.MNIST(root=opt.dataroot, train=False, download=True, transform=transforms.Compose([
-                                transforms.Resize(opt.imageSize),
-                                transforms.ToTensor()
-                            ]))
+    transform=transforms.Compose([
+        transforms.Resize(opt.image_size),
+        transforms.ToTensor()
+    ])
+    # load test sets
+    in_distro_dataset = get_torchvision_dataset(opt.in_distro_dataset, False, transform)
+    out_distro_dataset = get_torchvision_dataset(opt.out_distro_dataset, False, transform)
 
-    dataloader_mnist = torch.utils.data.DataLoader(dataset_mnist, batch_size=opt.batch_size,
-                                            shuffle=True, num_workers=int(opt.workers))
-    '''
-
-    ################################################## Dataloadaing ##################################################################
-    dataset_cifar_train = dset.CIFAR10(root=opt.dataroot, download=True, train=True,
-                                       transform=transforms.Compose([
-                                           transforms.Resize(opt.imageSize),
-                                           transforms.ToTensor()
-                                       ]))
-
-    dataset_cifar_test = dset.CIFAR10(root=opt.dataroot, download=True, train=False,
-                                      transform=transforms.Compose([
-                                          transforms.Resize(opt.imageSize),
-                                          transforms.ToTensor()
-                                      ]))
-
-    dataset_svhn = dset.SVHN(root=opt.dataroot, download=True,
-                             transform=transforms.Compose([
-                                 transforms.Resize(opt.imageSize),
-                                 transforms.ToTensor()
-                             ]))
-
-    dataset_cifar100 = dset.CIFAR100(root='data', train=False, download=False, transform=transforms.Compose([
-                                 transforms.Resize(opt.imageSize),
-                                 transforms.ToTensor()]))
-
-    paht = (os.path.dirname(os.path.abspath(__file__)))
-    dataset_name = str(paht) + '/data/img_align_celeba'
-    img_size = 32
-
-
-    class ImageDataset(Dataset):
-        def __init__(self, root, transforms_=None, img_size=32, mask_size=64, mode="train"):
-            self.transform = transforms.Compose(transforms_)
-            self.img_size = img_size
-            self.mask_size = mask_size
-            self.mode = mode
-            self.files = sorted(glob.glob("%s/*.jpg" % root))
-            self.files = self.files[:-19000] if mode == "train" else self.files[-19000:]
-
-        def __getitem__(self, index):
-            img = Image.open(self.files[index % len(self.files)])
-            img = self.transform(img)
-            return img
-
-        def __len__(self):
-            return len(self.files)
-
-
-    transforms_ = [
-        transforms.Resize((img_size, img_size), Image.BICUBIC),
-        transforms.ToTensor(),
-    ]
-    celebA = ImageDataset(dataset_name, transforms_=transforms_, mode="eval")
-    test_dataloader = DataLoader(
-        ImageDataset(dataset_name, transforms_=transforms_, mode="eval"),
-        batch_size=36,
-        shuffle=True,
-        num_workers=1,
-    )
     ngpu = int(opt.ngpu)
     nz = int(opt.nz)
     ngf = int(opt.ngf)
-    nc = 3
+    nc = int(opt.nc)
 
     ################################################## Model loading ##################################################################
     print('Building models...')
-    netG = DVAE.DCGAN_G(opt.imageSize, nz, nc, ngf, ngpu)
+    netG = DVAE.DCGAN_G(opt.image_size, nz, nc, ngf, ngpu)
     state_G = torch.load(opt.state_G, map_location=device)
     netG.load_state_dict(state_G)
 
-    netE = DVAE.Encoder(opt.imageSize, nz, nc, ngf, ngpu)
+    netE = DVAE.Encoder(opt.image_size, nz, nc, ngf, ngpu)
     state_E = torch.load(opt.state_E, map_location=device)
     netE.load_state_dict(state_E)
 
@@ -307,35 +237,26 @@ if __name__ == "__main__":
     loss_fn = nn.CrossEntropyLoss(reduction='none')
 
     print('Building complete...')
-    '''
-    First run through the VAE and record the ELBOs of each image in fmnist and mnist
-    '''
     NLL_test_indist = []
     NLL_test_indist_bg = []
 
-    eig_val = np.load('eigenvalues_50_vae_cifar100.npy')
-    eig_vec = np.load('eigenvectors_50_vae_cifar100.npy')
+    eig_val = np.load(opt.eigenvalues)
+    eig_vec = np.load(opt.eigenvectors)
     eig_val = torch.tensor(eig_val).to(device)
     eig_vec = torch.tensor(eig_vec).to(device)
 
-    eig_val2 = np.load('eigenvalues_50_vae_cifar100.npy')
-    eig_vec2 = np.load('eigenvectors_50_vae_cifar100.npy')
+    eig_val2 = np.load(opt.eigenvalues)
+    eig_vec2 = np.load(opt.eigenvectors)
     eig_val2 = torch.tensor(eig_val2).to(device)
     eig_vec2 = torch.tensor(eig_vec2).to(device)
-
-    model = netE
 
     dic_param = flatten_params(netE.parameters())
 
     ################################################## Get_LMPBT_score ##################################################################
+    in_distro_nll = compute_likelihood(in_distro_dataset, netE, netG, eig_val, eig_vec, eig_val2, eig_vec2,
+                                dic_param['indices'], loss_fn)
+    out_distro_nll = compute_likelihood(out_distro_dataset , netE, netG, eig_val, eig_vec, eig_val2, eig_vec2,
+                                dic_param['indices'], loss_fn)
 
-    cifar_nll = compute_likelihood(dataset_cifar100, netE, netG, eig_val, eig_vec, eig_val2, eig_vec2,
-                                   dic_param['indices'], loss_fn)
-    svhn_nll = compute_likelihood(dataset_svhn , netE, netG, eig_val, eig_vec, eig_val2, eig_vec2, dic_param['indices'],
-                                  loss_fn)
-    celebA_nll = compute_likelihood(celebA, netE, netG, eig_val, eig_vec, eig_val2, eig_vec2,
-                                   dic_param['indices'], loss_fn)
-
-    np.save('cel100_nll_vae', celebA_nll.cpu().detach().numpy())
-    np.save('cifar100_nll_vae', cifar_nll.cpu().detach().numpy())
-    np.save('cifar100_nll_vae', svhn_nll.cpu().detach().numpy())
+    np.save('in_distro_nll_vae', in_distro_nll.cpu().detach().numpy())
+    np.save('out_distro_nll_vae', out_distro_nll.cpu().detach().numpy())

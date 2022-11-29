@@ -42,8 +42,8 @@ if __name__=="__main__":
     # parser.add_argument('--dataroot', default='./data', help='path to dataset')
     parser.add_argument('--dataset', default='CIFAR10', help='dataset')
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=0)
-    parser.add_argument('--batchSize', type=int, default=128, help='input batch size')
-    parser.add_argument('--imageSize', type=int, default=32, help='the height / width of the input image to network')
+    parser.add_argument('--batch_size', type=int, default=128, help='input batch size')
+    parser.add_argument('--image_size', type=int, default=32, help='the height / width of the input image to network')
     parser.add_argument('--nc', type=int, default=3, help='input image channels')
     parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
     parser.add_argument('--ngf', type=int, default=64, help = 'hidden channel sieze')
@@ -75,7 +75,7 @@ if __name__=="__main__":
     dataset = None
     dataloader = None
     transform = transforms.Compose([
-        transforms.Resize((opt.imageSize)),
+        transforms.Resize((opt.image_size)),
         transforms.ToTensor(),
     ])
     if opt.dataset == "MNIST":
@@ -90,7 +90,7 @@ if __name__=="__main__":
         dataset = dset.CIFAR100(root="./CIFAR100", train=True, download=True, transform=transform)
     else:
         raise ValueError("opt.dataset is invalid, received {}".format(opt.dataset))
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True, num_workers=int(opt.workers))
 
     ngpu = int(opt.ngpu)
     nz = int(opt.nz)
@@ -106,10 +106,10 @@ if __name__=="__main__":
             m.weight.data.normal_(1.0, 0.02)
             m.bias.data.fill_(0)
 
-    netG = DVAE.DCGAN_G(opt.imageSize, nz, nc, ngf, ngpu)
+    netG = DVAE.DCGAN_G(opt.image_size, nz, nc, ngf, ngpu)
     netG.apply(weights_init)
     # print (len(netG.parameters))
-    netE = DVAE.Encoder(opt.imageSize, nz, nc, ngf, ngpu)
+    netE = DVAE.Encoder(opt.image_size, nz, nc, ngf, ngpu)
     netE.apply(weights_init)
 
     
