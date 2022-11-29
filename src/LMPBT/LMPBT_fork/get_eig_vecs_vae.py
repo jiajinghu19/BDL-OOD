@@ -72,7 +72,7 @@ if __name__=="__main__":
     opt = parser.parse_args()
     
     cudnn.benchmark = True
-    device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     
     transform = transforms.Compose([
         transforms.Resize(32),
