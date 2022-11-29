@@ -127,7 +127,12 @@ if __name__=="__main__":
     rec_l = []
     kl = []
     tloss = []
+    best_rec_l = None
+    best_rec_l_epoch = None
+    best_rec_l_netG = None
+    best_rec_l_netE = None
     for epoch in range(opt.niter):
+        epoch_rec_l = []
         for i, (x, _) in enumerate(dataloader):
             x = x.to(device)
             if opt.perturbed:
@@ -155,6 +160,7 @@ if __name__=="__main__":
 
             optimizer1.step()
             optimizer2.step()
+            epoch_rec_l.append(recl.detach().item())
             rec_l.append(recl.detach().item())
             kl.append(kld.mean().detach().item())
             tloss.append(loss.detach().item())
@@ -162,5 +168,11 @@ if __name__=="__main__":
             if not i % 100:
                 print('epoch:{} recon:{} kl:{}'.format(epoch,np.mean(rec_l),np.mean(kl)
                     ))
-    torch.save(netG.state_dict(), os.path.join(opt.experiment,'{}_netG.pth'.format(opt.dataset)))
-    torch.save(netE.state_dict(), os.path.join(opt.experiment,'{}_netE.pth'.format(opt.dataset)))
+        
+        if (best_rec_l is None) or best_rec_l < np.mean(epoch_rec_l):
+            best_rec_l = np.mean(epoch_rec_l)
+            best_rec_l_epoch = epoch
+            torch.save(netG.state_dict(), os.path.join(opt.experiment,'{}_netG.pth'.format(opt.dataset)))
+            torch.save(netE.state_dict(), os.path.join(opt.experiment,'{}_netE.pth'.format(opt.dataset)))
+    print("Done training!")
+    print("Best epoch was {}".format(best_rec_l_epoch))
