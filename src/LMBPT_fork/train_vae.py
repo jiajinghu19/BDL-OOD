@@ -169,10 +169,12 @@ if __name__=="__main__":
                 print('epoch:{} recon:{} kl:{}'.format(epoch,np.mean(rec_l),np.mean(kl)
                     ))
         
-        if (best_rec_l is None) or best_rec_l < np.mean(epoch_rec_l):
+        if (best_rec_l is None) or np.mean(epoch_rec_l) < best_rec_l:
             best_rec_l = np.mean(epoch_rec_l)
             best_rec_l_epoch = epoch
-            torch.save(netG.state_dict(), os.path.join(opt.experiment,'{}_netG.pth'.format(opt.dataset)))
-            torch.save(netE.state_dict(), os.path.join(opt.experiment,'{}_netE.pth'.format(opt.dataset)))
+            torch.save(netG.state_dict(), os.path.join(opt.experiment,'{}_epoch{}_netG.pth'.format(opt.dataset,epoch)))
+            torch.save(netE.state_dict(), os.path.join(opt.experiment,'{}_epoch{}_netE.pth'.format(opt.dataset,epoch)))
+    torch.save(netG.state_dict(), os.path.join(opt.experiment,'{}_epoch{}_netG.pth'.format(opt.dataset,epoch)))
+    torch.save(netE.state_dict(), os.path.join(opt.experiment,'{}_epoch{}_netE.pth'.format(opt.dataset,epoch)))
     print("Done training!")
     print("Best epoch was {}".format(best_rec_l_epoch))
