@@ -80,7 +80,7 @@ if __name__=="__main__":
     ])
     training_dataset = get_torchvision_dataset(opt.training_dataset, True, transform)
     trainloader = torch.utils.data.DataLoader(training_dataset, batch_size=32,
-                                              shuffle=True, num_workers=6)
+                                              shuffle=True, num_workers=1)
 
     ngpu = int(opt.ngpu)
     nz = int(opt.nz)
