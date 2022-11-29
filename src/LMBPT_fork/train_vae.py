@@ -82,7 +82,7 @@ if __name__=="__main__":
         dataset = dset.MNIST(root="./MNIST", train=True, download=True, transform=transform)
     elif opt.dataset == "FashionMNIST":
         dataset = dset.FashionMNIST(root="./FashionMNIST", train=True, download=True, transform=transform)
-    elif opt.dataset == "FashionMNIST":
+    elif opt.dataset == "SVHN":
         dataset = dset.SVHN(root="./SVHN", split='train', download=True, transform=transform)
     elif opt.dataset == "CIFAR10":
         dataset = dset.CIFAR10(root="./CIFAR10", train=True, download=True, transform=transform)
