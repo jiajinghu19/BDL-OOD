@@ -120,7 +120,7 @@ def compute_likelihood(dataset, model, model_g, eig_val, eig_vec, eig_val2, eig_
     temp2 = list()
     count = 0
     # h_diag[h_diag == float('inf')] = 0
-    for x in dataloader:
+    for i, (x, _) in enumerate(dataloader):
         count += 1
         x = x.to(device)
         grads2_g = []
@@ -168,7 +168,7 @@ def compute_likelihood(dataset, model, model_g, eig_val, eig_vec, eig_val2, eig_
                 temp_val = torch.einsum('ij, ij->ij', temp_val, grads_u)
                 diff += temp_val.sum()
 
-            print(diff.sum())
+            # print(diff.sum())
             # run your code
 
             temp.append(diff.sum())
