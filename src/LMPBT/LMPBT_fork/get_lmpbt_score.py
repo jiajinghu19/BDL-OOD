@@ -173,7 +173,7 @@ def compute_likelihood(dataset, model, model_g, eig_val, eig_vec, eig_val2, eig_
 
             temp.append(diff.sum())
         time_elapsed = (time.clock() - time_start)
-        print (time_elapsed)
+        # print (time_elapsed)
         if count > 160:
             break
 
