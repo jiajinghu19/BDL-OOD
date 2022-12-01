@@ -86,6 +86,7 @@ class DCGAN_G(nn.Module):
             output = output.permute(0, 1, 3, 4, 2)
         else: 
             output = self.main(input)
+            print("output.size()",output.size()) # output.size() torch.Size([1, 768, 32, 32])
             output = output.view(-1, self.nc, 256, self.isize, self.isize)
             output = output.permute(0, 1, 3, 4, 2)
 

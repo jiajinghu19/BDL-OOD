@@ -123,16 +123,24 @@ if __name__=="__main__":
         epoch_rec_l = []
         for i, (x, _) in enumerate(dataloader):
             x = x.to(device)
+            print("x",x)
+            print("x.size()",x.size())
             if opt.perturbed:
                 x = perturb(x, opt.ratio, device)
 
             b = x.size(0)
+            print("x.data.view(-1)",x.data.view(-1).size())
             target = Variable(x.data.view(-1) * 255).long()
             [z,mu,logvar] = netE(x)
             recon = netG(z)
-            
+            print("recon.size() 1",recon.size())
             recon = recon.contiguous()
+            print("recon.size() 2",recon.size())
             recon = recon.view(-1,256)
+            print("recon.size() 3",recon.size())
+            print("target.size()",target.size())
+            print("recon",recon)
+            print("target",target)
             recl = loss_fn(recon, target)
             recl = torch.sum(recl) / b
             kld = KL_div(mu,logvar)
