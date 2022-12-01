@@ -34,11 +34,9 @@ with torch.no_grad():
     sample = torch.randn(1, nz, 1, 1).to(device) # this is correct
     sample = netG(sample)
     print("sample.size()",sample.size())
-    print("test sample size??",sample[0,0,0,0].size)
-    print("test sample??",sample[0,0,0,0])
-    # print("sample",torch.mean(sample,4).size())
+    print("torch.movedim(sample,4,0).size()",torch.squeeze(torch.movedim(sample,4,0)).size())
     save_image(
-        sample[0,:,:,:,:].view(256,nc,image_size,image_size), 
+        torch.squeeze(torch.movedim(sample,4,0)),
         'test.png',
         nrow=32, 
         padding=0

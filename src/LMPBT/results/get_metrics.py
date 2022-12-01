@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import auc, precision_recall_curve, roc_curve
 
-PARENT_DIRECTORY = "./Train_MNIST/" # set the parent directory of the results
-TITLE = "LMPBT - Train MNIST, Test Fashion MNIST - " # title of the plots
+PARENT_DIRECTORY = "./Train_FashionMNIST/" # set the parent directory of the results
+TITLE = "LMPBT - Train Fashion MNIST, Test MNIST - " # title of the plots
 
 nll_in_distro = np.load(PARENT_DIRECTORY + 'in_distro_nll_vae.npy')
 nll_out_distro = np.load(PARENT_DIRECTORY + 'out_distro_nll_vae.npy')
