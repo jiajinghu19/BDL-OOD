@@ -43,8 +43,8 @@ netE.eval()
 
 with torch.no_grad():
     for i, (x, _) in enumerate(dataloader):
-        print("x",x)
-        print("x",x.size())
+        # print("x",x)
+        # print("x",x.size())
         save_image(
             x,
             'x.png',
@@ -58,10 +58,10 @@ with torch.no_grad():
         sample = z
         # sample = torch.randn(1, nz, 1, 1).to(device)
         sample = netG(sample)
-        print("sample.size()",sample.size()) # sample.size() torch.Size([1, 3, 32, 32, 256])
-        print("sample[:,:,:,:,0]",sample[:,:,:,:,0])
+        # print("sample.size()",sample.size()) # sample.size() torch.Size([1, 3, 32, 32, 256])
+        # print("torch.max(sample,4).size()", torch.amax(sample,4).size())
         save_image(
-            sample[:,:,:,:,0],
+            torch.amax(sample,4),
             'test.png',
             nrow=int(math.sqrt(batch_size)),
             padding=0
