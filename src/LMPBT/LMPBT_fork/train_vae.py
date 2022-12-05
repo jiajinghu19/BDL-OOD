@@ -17,6 +17,9 @@ from pathlib import Path
 import os
 from get_torchvision_dataset import get_torchvision_dataset
 
+from torchvision.utils import save_image
+import math
+
 def KL_div(mu,logvar,reduction = 'avg'):
     mu = mu.view(mu.size(0),mu.size(1))
     logvar = logvar.view(logvar.size(0), logvar.size(1))
@@ -123,24 +126,37 @@ if __name__=="__main__":
         epoch_rec_l = []
         for i, (x, _) in enumerate(dataloader):
             x = x.to(device)
-            print("x",x)
-            print("x.size()",x.size())
+            # print("x",x)
+            # print("x.size()",x.size())
+            # save_image(
+            #     x,
+            #     'x.png',
+            #     nrow=int(math.sqrt(opt.batch_size)),
+            #     padding=0
+            # )
             if opt.perturbed:
                 x = perturb(x, opt.ratio, device)
+            
+            # save_image(
+            #     x,
+            #     'x_perturb.png',
+            #     nrow=int(math.sqrt(opt.batch_size)),
+            #     padding=0
+            # )
 
             b = x.size(0)
-            print("x.data.view(-1)",x.data.view(-1).size())
+            # print("x.data.view(-1)",x.data.view(-1).size())
             target = Variable(x.data.view(-1) * 255).long()
             [z,mu,logvar] = netE(x)
             recon = netG(z)
-            print("recon.size() 1",recon.size())
+            # print("recon.size() 1",recon.size())
             recon = recon.contiguous()
-            print("recon.size() 2",recon.size())
+            # print("recon.size() 2",recon.size())
             recon = recon.view(-1,256)
-            print("recon.size() 3",recon.size())
-            print("target.size()",target.size())
-            print("recon",recon)
-            print("target",target)
+            # print("recon.size() 3",recon.size())
+            # print("target.size()",target.size())
+            # print("recon",recon)
+            # print("target",target)
             recl = loss_fn(recon, target)
             recl = torch.sum(recl) / b
             kld = KL_div(mu,logvar)

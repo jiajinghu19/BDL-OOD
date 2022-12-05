@@ -4,11 +4,15 @@
 # 2) run `python generate_ROC_PR_curves.py`
 
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+import matplotlib.patches as mpatches
 import numpy as np
 from sklearn.metrics import auc, precision_recall_curve, roc_curve
 
 ID = "FashionMNIST"
 OOD = "MNIST"
+# TEXT_PADDING = 0.03
+TARGET_TPR = 0.95
 
 IMAGE_FILE_PREFIX = "./LMPBT_vs_ODIN_{}-ID_{}-OOD_".format(ID,OOD)
 LMPBT_DIRECTORY = "./LMPBT/results/Train_{}/".format(ID) # set the parent directory of the results
@@ -48,7 +52,7 @@ def calc_ROC_PR_data(labels, predictions, pos_label=1):
     pr_auc = auc(recall, precision)
 
 
-    fpr95 = (fpr[np.argmin(np.abs(tpr - 0.95))].min())
+    fpr95 = (fpr[np.argmin(np.abs(tpr - TARGET_TPR))].min())
 
     return fpr, tpr, roc_auc, precision, recall, pr_auc, fpr95
 
@@ -64,22 +68,39 @@ def calc_ROC_PR_data(labels, predictions, pos_label=1):
   ODIN_precision, ODIN_recall, ODIN_aupr, ODIN_fpr95
 ) = calc_ROC_PR_data(ODIN_labels, ODIN_predictions)
 
+### ROC Curve ###
 plt.figure(1).clf()
 plt.title(TITLE + "ROC Curves")
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.plot(LMPBT_fpr,LMPBT_tpr,label="LMPBT, AUROC={:.3f}".format(LMPBT_auroc))
-plt.plot(ODIN_fpr,ODIN_tpr,label="ODIN, AUROC={:.3f}".format(ODIN_auroc))
-plt.legend(loc=0)
+plt.plot(LMPBT_fpr,LMPBT_tpr,label="LMPBT, AUROC={:.3f}, FPR={:.3f}".format(LMPBT_auroc,LMPBT_fpr95))
+plt.plot(ODIN_fpr,ODIN_tpr,label="ODIN,   AUROC={:.3f}, FPR={:.3f}".format(ODIN_auroc,ODIN_fpr95))
+
+# dashed line and legend
+plt.axhline(y = TARGET_TPR, color = 'r', linestyle = '--')
+handles, labels = plt.gca().get_legend_handles_labels()
+line = Line2D([0], [0], label='95% TPR', color='r', linestyle = '--')
+handles.extend([line])
+plt.legend(handles=handles,loc=0)
+
+plt.plot(LMPBT_fpr95, TARGET_TPR, color = 'black', marker='o')
+plt.plot(ODIN_fpr95, TARGET_TPR, color = 'black', marker='o')
+# plt.text(LMPBT_fpr95 - TEXT_PADDING, TARGET_TPR + TEXT_PADDING, 'FPR={:.3f}'.format(LMPBT_fpr95), horizontalalignment='right',
+#     verticalalignment='bottom')
+# plt.text(ODIN_fpr95 + TEXT_PADDING, TARGET_TPR - TEXT_PADDING, 'FPR={:.3f}'.format(ODIN_fpr95), horizontalalignment='left',
+#     verticalalignment='top')
+
 plt.savefig(IMAGE_FILE_PREFIX+'roc_curve.png')
 
-plt.figure(2).clf()
-plt.title(TITLE + "PR Curves")
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.plot(LMPBT_recall,LMPBT_precision,label="LMPBT, AUPR={:.3f}".format(LMPBT_aupr))
-plt.plot(ODIN_recall,ODIN_precision,label="ODIN, AUPR={:.3f}".format(ODIN_aupr))
-plt.legend(loc='best')
-plt.savefig(IMAGE_FILE_PREFIX+'pr_curve.png')
+
+### PR Curve ###
+# plt.figure(2).clf()
+# plt.title(TITLE + "PR Curves")
+# plt.xlabel('Recall')
+# plt.ylabel('Precision')
+# plt.plot(LMPBT_recall,LMPBT_precision,label="LMPBT, AUPR={:.3f}".format(LMPBT_aupr))
+# plt.plot(ODIN_recall,ODIN_precision,label="ODIN, AUPR={:.3f}".format(ODIN_aupr))
+# plt.legend(loc='best')
+# plt.savefig(IMAGE_FILE_PREFIX+'pr_curve.png')
 
 plt.show()
