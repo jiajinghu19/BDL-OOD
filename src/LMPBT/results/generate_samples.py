@@ -11,6 +11,7 @@ import math
 
 import DCGAN_VAE_pixel as DVAE
 
+# PARAMETERS
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 ngpu = 0
 nz = 100
@@ -21,6 +22,7 @@ state_G = "../LMPBT_fork/cifar100_netG.pth"
 state_E = "../LMPBT_fork/cifar100_netE.pth"
 batch_size = 9
 
+# LOAD AND TRANSFORM DATA
 transform = transforms.Compose([
         transforms.Resize((image_size)),
         transforms.ToTensor(),
@@ -28,6 +30,7 @@ transform = transforms.Compose([
 dataset = dset.CIFAR100(root="./CIFAR100", train=False, download=True, transform=transform)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
+# LOAD MODELS
 netG = DVAE.DCGAN_G(image_size, nz, nc, ngf, ngpu)
 state_G = torch.load(state_G, map_location=device)
 netG.load_state_dict(state_G, strict=False)
@@ -42,28 +45,31 @@ netE.to(device)
 netE.eval()
 
 with torch.no_grad():
-    for i, (x, _) in enumerate(dataloader):
-        print("x",x)
-        # print("x",x.size())
+    for i, (x, _) in enumerate(dataloader): # for each batch
+        # save the input images
         save_image(
             x,
             'x.png',
             nrow=int(math.sqrt(batch_size)),
             padding=0
         )
+        # print("x",x)
 
-        x = x.to(device)
-        [z,mu,logvar] = netE(x)
 
-        # z = torch.randn(1, nz, 1, 1).to(device)
-        sample = netG(z)
-        # print("sample.size()",sample.size()) # sample.size() torch.Size([1, 3, 32, 32, 256])
-        print("torch.max(sample,4).size()", torch.amax(sample,4).size())
-        # idx = torch.LongTensor([2,1,0])
-        samples =  ((torch.amax(sample,4) + 128)/255) #.index_select(1, idx)
-        print("samples", samples)
+        x = x.to(device) 
+        [z,mu,logvar] = netE(x) # pass the input images through the encoder
+
+        generated = netG(z) # pass the encoding through the generator
+        print("generated.size()",generated[:,:,:,:,0].size())
+        generated =  (torch.amax(generated,4)) # not sure how to handle the 256 dimension, here we pull the max
+        # generated = generated[:,:,:,:,0]
+        # generated =  -1.0*(generated) 
+
+        # print("generated",generated)
+
+        # save the generated outputs
         save_image(
-            samples,
+            generated,
             'test.png',
             nrow=int(math.sqrt(batch_size)),
             padding=0

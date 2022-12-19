@@ -9,8 +9,8 @@ import matplotlib.patches as mpatches
 import numpy as np
 from sklearn.metrics import auc, precision_recall_curve, roc_curve
 
-ID = "FashionMNIST"
-OOD = "MNIST"
+ID = "CIFAR-10"
+OOD = "SVHN"
 # TEXT_PADDING = 0.03
 TARGET_TPR = 0.95
 
@@ -42,11 +42,14 @@ def process_ODIN_data(ID_data_unprocessed, OOD_data_unprocessed):
         np.concatenate((ID_probabilities, OOD_probabilities),axis=0) # array of preditected values
     )
 
-def calc_ROC_PR_data(labels, predictions, pos_label=1):
+def calc_ROC_PR_data(labels, predictions, pos_label=1, NLL_data=False):
     # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.RocCurveDisplay.html
     (fpr,tpr,thresholds) = roc_curve( labels, predictions, pos_label=pos_label )
 
-    (precision,recall,thresholds) = precision_recall_curve( labels, predictions, pos_label=pos_label )
+    if NLL_data: # when we are using NLL data from the VAE, we need to flip the predictions back to negative for the PR curve
+        (precision,recall,thresholds) = precision_recall_curve( labels, -predictions )
+    else:
+        (precision,recall,thresholds) = precision_recall_curve( labels, predictions, pos_label=pos_label )
 
     roc_auc = auc(fpr, tpr)
     pr_auc = auc(recall, precision)
@@ -60,7 +63,7 @@ def calc_ROC_PR_data(labels, predictions, pos_label=1):
 (
   LMPBT_fpr, LMPBT_tpr, LMPBT_auroc,
   LMPBT_precision, LMPBT_recall, LMPBT_aupr, LMPBT_fpr95
-) = calc_ROC_PR_data(LMPBT_labels, LMPBT_predictions, pos_label=0)
+) = calc_ROC_PR_data(LMPBT_labels, LMPBT_predictions, pos_label=0, NLL_data=True)
 
 (ODIN_labels, ODIN_predictions) = process_ODIN_data(ODIN_ID_probabilities, ODIN_OOD_probabilities)
 (
@@ -94,13 +97,13 @@ plt.savefig(IMAGE_FILE_PREFIX+'roc_curve.png')
 
 
 ### PR Curve ###
-# plt.figure(2).clf()
-# plt.title(TITLE + "PR Curves")
-# plt.xlabel('Recall')
-# plt.ylabel('Precision')
-# plt.plot(LMPBT_recall,LMPBT_precision,label="LMPBT, AUPR={:.3f}".format(LMPBT_aupr))
-# plt.plot(ODIN_recall,ODIN_precision,label="ODIN, AUPR={:.3f}".format(ODIN_aupr))
-# plt.legend(loc='best')
-# plt.savefig(IMAGE_FILE_PREFIX+'pr_curve.png')
+plt.figure(2).clf()
+plt.title(TITLE + "PR Curves")
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.plot(LMPBT_recall,LMPBT_precision,label="LMPBT, AUPR={:.3f}".format(LMPBT_aupr))
+plt.plot(ODIN_recall,ODIN_precision,label="ODIN, AUPR={:.3f}".format(ODIN_aupr))
+plt.legend(loc='best')
+plt.savefig(IMAGE_FILE_PREFIX+'pr_curve.png')
 
 plt.show()

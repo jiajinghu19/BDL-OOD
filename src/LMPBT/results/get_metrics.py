@@ -9,11 +9,18 @@ TITLE = "LMPBT - Train Fashion MNIST, Test MNIST - " # title of the plots
 
 nll_in_distro = np.load(PARENT_DIRECTORY + 'in_distro_nll_vae.npy')
 nll_out_distro = np.load(PARENT_DIRECTORY + 'out_distro_nll_vae.npy')
+
+k = 10
+idx = np.argpartition(nll_out_distro, k)[:k]
+print('nll_out_distro idx', nll_out_distro[idx])
+idx = np.argpartition(nll_in_distro, k)[:k]
+print('nll_in_distro idx', nll_in_distro[idx])
+
 combined = np.concatenate((nll_in_distro, nll_out_distro))
 labels = np.concatenate((np.ones(len(nll_in_distro)), np.zeros(len(nll_out_distro))))
 
 (fpr, tpr, thresholds) = roc_curve(labels, combined, pos_label=0)
-(precision,recall,thresholds) = precision_recall_curve(labels, combined, pos_label=0)
+(precision,recall,thresholds) = precision_recall_curve(labels, -combined)
 
 roc_auc = auc(fpr, tpr)
 pr_auc = auc(recall, precision)
