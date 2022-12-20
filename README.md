@@ -1,8 +1,9 @@
 # BDL-OOD
 
-For our Bayesian Deel Learning course at Tufts University, we conducted bidirectional out of distribution (OOD) detection experiments comparing the performance of a Basyesian (LMPBT VAE) and non-Bayesian (ODIN CNN). We found that both methods had varying performance depending on the in vs out of distribution datasets and directionality.
+For our Bayesian Deel Learning course at Tufts University, we conducted bidirectional out of distribution (OOD) image detection experiments comparing the performance of a Basyesian (LMPBT VAE) and non-Bayesian (ODIN CNN) method. We found that both methods had varying performance depending on the in vs out of distribution datasets and directionality. In reflection, we caution against using deep learning models in
+contexts where OOD detection performance has not been thoroughly evaluated, andpropose a rigorous OOD testing framework to evaluate methods against multiple test datasets in multiple directions.
 
-TODO full report
+[<img src="full_report_button.png" height="30"/>](152_BDL_OOD_Final_Report.pdf)
 
 ## Results
 
@@ -36,6 +37,12 @@ TODO full report
     </tr>
   </tbody>
 </table>
+
+## Proposed OOD Testing Framework
+
+<img src="OOD_testing_framework.png" style="max-width:400px"/>
+
+In order to systematically evaluate a model's OOD detection performance, we propose a rigorous multi-directional image classification OOD testing framework, so that evaluations do not focus on a dataset pair and direction that coincidentally demonstrates good performance. In our experiments, we only tested four dataset pairs and directions, but future work can be done to implement a multi-directional testing framework in which all the possible dataset pairs and directions are tested.
 
 ## Code
 
